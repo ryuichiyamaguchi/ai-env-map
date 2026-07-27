@@ -17,6 +17,23 @@ def _default_out() -> Path:
     return Path.cwd() / "Deliverables" / date.today().isoformat() / "ai-env-map.html"
 
 
+def _use_utf8_output() -> None:
+    """標準出力を UTF-8 にする。
+
+    Windows の既定コンソールは cp932 や cp1252 で、日本語や «…» を print
+    しただけで UnicodeEncodeError になり、成果物を書き終えたあとに異常終了
+    する。表示できない文字は落として構わないので errors も緩める。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="ai-env-map",
@@ -38,6 +55,7 @@ def main(argv: list[str] | None = None) -> int:
                          "クリックでの中身表示ができなくなる")
     ap.add_argument("--no-open", action="store_true", help="生成後にブラウザで開かない")
     args = ap.parse_args(argv)
+    _use_utf8_output()
 
     # 共有モードでは本文を埋め込まない。パスを伏せても本文が丸ごと
     # 入っていては共有できないため、既定で落とす。

@@ -33,13 +33,13 @@ jobs:
       - name: 実際に走査して HTML を生成できるか
         # 中身のない一時ディレクトリを起点にして、空の環境でも
         # 例外を投げずに成果物が出ることを確認する。
-        run: uv run ai-env-map --home . --no-open --fast -o /tmp/out.html
+        run: uv run ai-env-map --home . --no-open --fast -o out.html
 
       - name: 生成物が自己完結しているか
         shell: python
         run: |
           import re, sys
-          html = open("/tmp/out.html", encoding="utf-8").read()
+          html = open("out.html", encoding="utf-8").read()
           external = re.findall(r'(?:src|href)="(?:https?:)?//', html)
           assert not external, f"外部参照が混入している: {external[:3]}"
           assert "<title>" in html and len(html) > 1000
