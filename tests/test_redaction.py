@@ -79,3 +79,24 @@ def test_共有モードでは本文を埋め込まない(tmp_path):
 def test_ホームのパスは通常モードでも波線に短縮される(tmp_path):
     r = Renderer(make_result(tmp_path), redact=False)
     assert r.path(tmp_path / "x") == "~/x"
+
+
+def test_Windows_のパス区切りでも伏字が効く(tmp_path):
+    """区切りが \\ のとき、パス全体が1区切り扱いになって漏れないこと。
+
+    Windows では str(Path) が C:\\Users\\... を返す。/ で分割すると
+    分割されず、末尾が .json なのでファイル名とみなされて素通りしていた。
+    """
+    r = Renderer(make_result(tmp_path), redact=True)
+    win = str(tmp_path).replace("/", "\\") + "\\書類\\acme-corp-hub\\05_プロジェクトX\\.claude\\settings.json"
+    out = r.path(win)
+    assert "acme-corp-hub" not in out, f"漏れた: {out}"
+    assert "プロジェクトX" not in out
+    assert out.endswith("settings.json"), "ファイル名までは伏せない"
+
+
+def test_Windows_の絶対パスが本文に混ざっても伏せる(tmp_path):
+    r = Renderer(make_result(tmp_path), redact=True)
+    out = r.text(r"node C:\Users\tanaka\acme-corp-hub\run.js")
+    assert "acme-corp-hub" not in out
+    assert "tanaka" not in out

@@ -535,8 +535,11 @@ class Renderer:
     }
 
     def path(self, p: Path | str) -> str:
-        s = str(p)
-        home = str(self.r.home)
+        # Windows のパスは区切りが \ になる。正規化せずに / で分割すると
+        # パス全体が1個の区切りになり、末尾が .json なら「ファイル名だから
+        # 残す」と判定されて丸ごと漏れる。先に区切りをそろえる。
+        s = str(p).replace("\\", "/")
+        home = str(self.r.home).replace("\\", "/")
         if s.startswith(home):
             s = "~" + s[len(home):]
         if not self.redact:
@@ -554,8 +557,11 @@ class Renderer:
             self._alias[seg] = f"«{hashlib.sha256(seg.encode()).hexdigest()[:4]}»"
         return self._alias[seg]
 
-    _PATH_RE = re.compile(r"(?:~|/Users/[^/\s\"';:,]+|/home/[^/\s\"';:,]+)"
-                          r"(?:/[^\s\"';,()\[\]]+)*")
+    # 本文に紛れ込む絶対パス。Windows の `C:\Users\...` も拾えるようにする。
+    _PATH_RE = re.compile(
+        r"(?:~|/Users/[^/\s\"';:,]+|/home/[^/\s\"';:,]+"
+        r"|[A-Za-z]:[\\/]Users[\\/][^\\/\s\"';:,]+)"
+        r"(?:[\\/][^\s\"';,()\[\]]+)*")
     # Claude Code は ~/.claude/projects/ の下に、絶対パスの区切りをハイフンに
     # 置き換えた名前でディレクトリを作る。名前自体がパスなので伏字対象になる。
     _DASH_PATH_RE = re.compile(r"-(?:Users|home)-[^\s\"'/]+")
