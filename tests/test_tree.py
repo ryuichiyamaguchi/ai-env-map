@@ -160,3 +160,16 @@ def test_hidden_属性が確実に効く(tmp_path):
     """引き出しの display:flex に負けないよう強制する規則があること。"""
     html = render(scan(home=tmp_path, skip_sizes=True))
     assert "[hidden]{display:none!important}" in html
+
+
+def test_書式文字列に非ASCIIを使わない():
+    """Windows の strftime は書式をロケール符号化に通すため日本語で落ちる。
+
+    「2026-07-28 更新」のような表示は、日付を組んでから連結して作ること。
+    """
+    import re
+    from pathlib import Path as P
+    for f in sorted(P("ai_env_map").glob("*.py")):
+        for m in re.finditer(r'strftime\(\s*(["\'])(.*?)\1', f.read_text(encoding="utf-8")):
+            fmt = m.group(2)
+            assert fmt.isascii(), f"{f.name}: strftime の書式に非 ASCII: {fmt!r}"

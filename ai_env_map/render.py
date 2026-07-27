@@ -935,7 +935,10 @@ class Renderer:
                     SCOPE_LABEL.get(c.scope, c.scope), gl,
                     f"{c.lines}行", _human(c.size)]
             if c.mtime:
-                meta.append(datetime.fromtimestamp(c.mtime).strftime("%Y-%m-%d 更新"))
+                # 書式文字列に非 ASCII を入れない。Windows では strftime が
+                # C ライブラリのロケール符号化を通るため、日本語で例外になる。
+                stamp = datetime.fromtimestamp(c.mtime).strftime("%Y-%m-%d")
+                meta.append(f"{stamp} 更新")
             data[c.uid] = {
                 "p": self.path(c.path),
                 "m": meta,
