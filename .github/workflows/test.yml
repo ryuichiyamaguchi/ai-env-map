@@ -1,0 +1,46 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    # 各 AI ツールの設定の置き場は OS ごとに違う。3 つとも回して、
+    # パスの組み立てやスケジューラ解析が壊れていないことを確かめる。
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11", "3.13"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: 依存を入れる
+        run: uv venv --python ${{ matrix.python }} && uv pip install pytest -e .
+
+      - name: テスト
+        run: uv run pytest tests/ -q
+
+      - name: 実際に走査して HTML を生成できるか
+        # 中身のない一時ディレクトリを起点にして、空の環境でも
+        # 例外を投げずに成果物が出ることを確認する。
+        run: uv run ai-env-map --home . --no-open --fast -o /tmp/out.html
+
+      - name: 生成物が自己完結しているか
+        shell: python
+        run: |
+          import re, sys
+          html = open("/tmp/out.html", encoding="utf-8").read()
+          external = re.findall(r'(?:src|href)="(?:https?:)?//', html)
+          assert not external, f"外部参照が混入している: {external[:3]}"
+          assert "<title>" in html and len(html) > 1000
+          print(f"OK: {len(html)} 文字, 外部参照 0 件")

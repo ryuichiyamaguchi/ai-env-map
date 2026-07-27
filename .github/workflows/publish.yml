@@ -1,0 +1,58 @@
+name: publish
+
+# v0.1.0 のようなタグを push すると PyPI へ公開する。
+# 認証は Trusted Publishing（OIDC）で行うため、API トークンは保存しない。
+# 事前に PyPI 側で「このリポジトリのこのワークフローからの公開」を許可しておくこと。
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: テストが通ることを確かめる
+        run: |
+          uv venv --python 3.13
+          uv pip install pytest -e .
+          uv run pytest tests/ -q
+
+      - name: タグとパッケージのバージョンが一致するか
+        # 食い違ったまま公開すると、あとから同じ版番号で上げ直せなくなる。
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(uv run python -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          if [ "$tag" != "$pkg" ]; then
+            echo "タグ v$tag と pyproject.toml の $pkg が一致しない" >&2
+            exit 1
+          fi
+          echo "バージョン $pkg で公開する"
+
+      - name: 配布物を作る
+        run: uv build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # Trusted Publishing に必要。トークンの代わりに短命の OIDC を使う。
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

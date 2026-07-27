@@ -1,0 +1,21 @@
+# 生成物。走査したマシンの実パスと設定ファイルの中身が入るため、絶対にコミットしない。
+Deliverables/
+*.html
+graphify-out/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OS / エディタ
+.DS_Store
+.idea/
+.vscode/

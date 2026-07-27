@@ -1,0 +1,40 @@
+[project]
+name = "ai-env-map"
+version = "0.1.0"
+description = "PC 内の AI エージェント設定・成果物・自動発火を棚卸しして1枚の HTML にする"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+keywords = ["ai", "agent", "claude-code", "codex", "config", "audit", "visualization"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Utilities",
+]
+
+authors = [{ name = "Ryuichi Yamaguchi" }]
+
+[project.urls]
+Homepage = "https://github.com/ryuichiyamaguchi/ai-env-map"
+Repository = "https://github.com/ryuichiyamaguchi/ai-env-map"
+Issues = "https://github.com/ryuichiyamaguchi/ai-env-map/issues"
+
+[project.scripts]
+ai-env-map = "ai_env_map.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ai_env_map"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
