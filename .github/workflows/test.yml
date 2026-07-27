@@ -37,10 +37,13 @@ jobs:
 
       - name: 生成物が自己完結しているか
         shell: python
+        # Windows のランナーは標準出力が cp1252 のため、この検証スクリプト自身の
+        # 出力は ASCII に限る。日本語を print すると検証の中身とは無関係に落ちる。
         run: |
-          import re, sys
+          import re
           html = open("out.html", encoding="utf-8").read()
           external = re.findall(r'(?:src|href)="(?:https?:)?//', html)
-          assert not external, f"外部参照が混入している: {external[:3]}"
-          assert "<title>" in html and len(html) > 1000
-          print(f"OK: {len(html)} 文字, 外部参照 0 件")
+          assert not external, f"external reference found: {external[:3]}"
+          assert "<title>" in html, "no title tag"
+          assert len(html) > 1000, f"output too small: {len(html)}"
+          print(f"OK: {len(html)} chars, 0 external references")
