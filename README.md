@@ -1,5 +1,10 @@
 # ai-env-map
 
+[![PyPI](https://img.shields.io/pypi/v/ai-env-map)](https://pypi.org/project/ai-env-map/)
+[![Python](https://img.shields.io/pypi/pyversions/ai-env-map)](https://pypi.org/project/ai-env-map/)
+[![License](https://img.shields.io/pypi/l/ai-env-map)](LICENSE)
+[![test](https://github.com/ryuichiyamaguchi/ai-env-map/actions/workflows/test.yml/badge.svg)](https://github.com/ryuichiyamaguchi/ai-env-map/actions/workflows/test.yml)
+
 PC の中に散らばった AI エージェントの設定を、階層構造のまま1枚の HTML にする道具です。
 
 Claude Code、Codex、Gemini CLI、Cursor、Copilot と使うツールが増えるほど、`CLAUDE.md`、
