@@ -1,6 +1,6 @@
 [project]
 name = "ai-env-map"
-version = "0.1.0"
+version = "0.1.1"
 description = "PC 内の AI エージェント設定・成果物・自動発火を棚卸しして1枚の HTML にする"
 readme = "README.md"
 license = "MIT"

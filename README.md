@@ -21,11 +21,30 @@ Claude Code、Codex、Gemini CLI、Cursor、Copilot と使うツールが増え�
 
 ## 入れる
 
+### インストール不要で使う（Windows / macOS）
+
+Python も他の道具も入れられない環境向けに、単体で動く実行ファイルを配布しています。
+[最新リリース](https://github.com/ryuichiyamaguchi/ai-env-map/releases/latest) から
+`ai-env-map-windows.exe` または `ai-env-map-macos` をダウンロードして実行するだけです。
+
+### Python がある場合
+
 ```bash
-uv tool install ai-env-map
+pip install --user ai-env-map
+python -m ai_env_map
 ```
 
-`pipx install ai-env-map` でも入ります。Python 3.11 以上が必要です。
+`--user` を付ければ管理者権限は要りません。コマンドの置き場所が PATH に入っていない
+環境でも、`python -m ai_env_map` なら PATH を経由せずに起動できます。
+
+### uv や pipx を使う場合
+
+```bash
+uv tool install ai-env-map
+pipx install ai-env-map
+```
+
+Python 3.11 以上が必要です。uv を使う場合は Python 本体も uv が用意します。
 
 ## 使う
 

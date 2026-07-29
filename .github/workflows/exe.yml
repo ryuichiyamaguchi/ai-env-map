@@ -1,0 +1,69 @@
+name: exe
+
+# インストール不要の実行ファイルを作り、リリースに添付する。
+# Python も uv も入れられない環境（管理された社用 PC や学校 PC）で、
+# ダウンロードして実行するだけで使えるようにするためのもの。
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 添付先のタグ
+        required: true
+        default: v0.1.0
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            asset: ai-env-map-windows.exe
+            built: dist/ai-env-map.exe
+          - os: macos-latest
+            asset: ai-env-map-macos
+            built: dist/ai-env-map
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: 依存を入れる
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller .
+
+      - name: 実行ファイルを作る
+        # 依存パッケージがないので単一ファイルにまとめられる。
+        run: pyinstaller --onefile --name ai-env-map --console ai_env_map/__main__.py
+
+      - name: 動くことを確かめる
+        shell: bash
+        # 生成物が実際に起動し、HTML を出せるところまで見る。
+        run: |
+          "${{ matrix.built }}" --home . --no-open --fast -o check.html
+          python -c "
+          import re
+          h = open('check.html', encoding='utf-8').read()
+          assert '<title>' in h, 'no title'
+          assert not re.findall(r'(?:src|href)=\"(?:https?:)?//', h), 'external ref'
+          print(f'OK: {len(h)} chars')
+          "
+
+      - name: リリースに添付する
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          cp "${{ matrix.built }}" "${{ matrix.asset }}"
+          gh release upload "$TAG" "${{ matrix.asset }}" --clobber

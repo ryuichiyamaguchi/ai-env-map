@@ -63,3 +63,16 @@ def test_日本語を出せないコンソールでも落ちない(tmp_path, mon
     assert code == 0
     assert stream.reconfigured, "標準出力の符号化を切り替えていない"
     assert out.is_file()
+
+
+def test_python_m_で起動できる(tmp_path):
+    """PATH が通らない環境の逃げ道。python -m ai_env_map が動くこと。"""
+    import subprocess
+    import sys
+    out = tmp_path / "o.html"
+    r = subprocess.run(
+        [sys.executable, "-m", "ai_env_map", "--home", str(tmp_path),
+         "-o", str(out), "--no-open", "--fast"],
+        capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0, r.stderr
+    assert out.is_file()
